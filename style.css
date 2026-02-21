@@ -136,15 +136,7 @@ body {
     /* Important for absolute canvas positioning */
 }
 
-#attackCanvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none; /* Let clicks pass through to underneath elements */
-    z-index: 10; /* Above circles */
-}
+
 
 .field-half {
     padding: 20px 10px;
@@ -212,13 +204,24 @@ body {
     touch-action: none; /* Crucial for touch dragging */
 }
 
-/* Line Source Hover/Active Styles */
+/* Attacker Selection Styles */
 .line-source:not(.rested) {
-    cursor: crosshair;
+    cursor: pointer;
 }
 
 .line-source:not(.rested):hover {
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+}
+
+.vg-circle.selected-attacker {
+    box-shadow: 0 0 25px rgba(255, 235, 59, 0.9), inset 0 0 15px rgba(255, 235, 59, 0.7) !important;
+    transform: scale(1.15) !important;
+    border: 3px solid rgba(255, 235, 59, 0.9) !important;
+}
+
+.vg-circle.valid-target-hint {
+    box-shadow: 0 0 20px rgba(255, 107, 107, 0.7), inset 0 0 10px rgba(255, 107, 107, 0.4);
+    cursor: pointer;
 }
 
 .vg-circle.valid-target {
@@ -255,7 +258,7 @@ body {
     top: 0; left: 0; right: 0; bottom: 0;
     border-radius: 50%;
     z-index: 5;
-    cursor: crosshair;
+    cursor: pointer;
 }
 .vg-circle.rested .node-overlay {
     cursor: not-allowed;
@@ -350,6 +353,7 @@ input::-webkit-inner-spin-button {
 }
 input[type=number] {
     -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 .drive-select {

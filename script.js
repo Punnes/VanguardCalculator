@@ -1,190 +1,74 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- Canvas Setup --- //
-    const canvas = document.getElementById('attackCanvas');
-    const ctx = canvas.getContext('2d');
+    // --- Click to Attack Logic --- //
     const battlefield = document.getElementById('battlefield');
-    
-    function resizeCanvas() {
-        canvas.width = battlefield.offsetWidth;
-        canvas.height = battlefield.offsetHeight;
-    }
-    
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas(); // Initial size
-
-    // --- Drag to Draw Line Logic --- //
-    let isDrawing = false;
-    let startCircle = null;
-    let currentX = 0;
-    let currentY = 0;
-    let startX = 0;
-    let startY = 0;
-    let validTargetCircle = null;
-
     const sources = document.querySelectorAll('.line-source');
     const targets = document.querySelectorAll('.line-target');
+    
+    let selectedAttacker = null;
 
-    function getCenterCoords(element) {
-        const rect = element.getBoundingClientRect();
-        const containerRect = battlefield.getBoundingClientRect();
-        return {
-            x: rect.left + rect.width / 2 - containerRect.left,
-            y: rect.top + rect.height / 2 - containerRect.top
-        };
-    }
-
-    // Handle Start Drawing
-    function handleStart(e, circle) {
-        if (circle.classList.contains('rested')) return;
+    battlefield.addEventListener('click', (e) => {
+        const circle = e.target.closest('.vg-circle');
         
-        // Prevent drawing if clicking on inputs
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+        // Prevent action if clicking on inputs or select inside the circle
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'LABEL') return;
 
-        isDrawing = true;
-        startCircle = circle;
-        validTargetCircle = null;
-        
-        const coords = getCenterCoords(circle);
-        startX = coords.x;
-        startY = coords.y;
-
-        // Update current position depending on touch/mouse
-        if (e.type === 'touchstart') {
-            const touch = e.touches[0];
-            const containerRect = battlefield.getBoundingClientRect();
-            currentX = touch.clientX - containerRect.left;
-            currentY = touch.clientY - containerRect.top;
-        } else {
-            const containerRect = battlefield.getBoundingClientRect();
-            currentX = e.clientX - containerRect.left;
-            currentY = e.clientY - containerRect.top;
-        }
-        
-        drawFrame();
-    }
-
-    // Calculate distance between point and element center
-    function getDistanceToTarget(x, y, targetElement) {
-        const coords = getCenterCoords(targetElement);
-        const dx = x - coords.x;
-        const dy = y - coords.y;
-        return Math.sqrt(dx*dx + dy*dy);
-    }
-
-    // Handle Move
-    function handleMove(e) {
-        if (!isDrawing) return;
-        e.preventDefault(); // Prevent scrolling on touch
-
-        let clientX, clientY;
-
-        if (e.type === 'touchmove') {
-            clientX = e.touches[0].clientX;
-            clientY = e.touches[0].clientY;
-        } else {
-            clientX = e.clientX;
-            clientY = e.clientY;
+        if (!circle) {
+            clearSelection();
+            return;
         }
 
-        const containerRect = battlefield.getBoundingClientRect();
-        currentX = clientX - containerRect.left;
-        currentY = clientY - containerRect.top;
-
-        // Check for hover over valid targets
-        let closestTarget = null;
-        let minDistance = 90; // Capture radius
-
-        targets.forEach(t => {
-            t.classList.remove('valid-target');
-            
-            // Only targets on the OPPOSITE side
-            if (t.getAttribute('data-side') !== startCircle.getAttribute('data-side')) {
-                const dist = getDistanceToTarget(currentX, currentY, t);
-                if (dist < minDistance) {
-                    minDistance = dist;
-                    closestTarget = t;
+        if (!selectedAttacker) {
+            // Trying to select an attacker
+            if (circle.classList.contains('line-source') && !circle.classList.contains('rested')) {
+                selectedAttacker = circle;
+                circle.classList.add('selected-attacker');
+                
+                // Highlight valid targets visually
+                targets.forEach(t => {
+                    if (t.getAttribute('data-side') !== selectedAttacker.getAttribute('data-side')) {
+                        t.classList.add('valid-target-hint');
+                    }
+                });
+            }
+        } else {
+            // An attacker is already selected
+            if (circle === selectedAttacker) {
+                // Clicked same -> deselect
+                clearSelection();
+            } else if (circle.getAttribute('data-side') === selectedAttacker.getAttribute('data-side')) {
+                // Clicked another source on same side -> change selection
+                if (circle.classList.contains('line-source') && !circle.classList.contains('rested')) {
+                    clearSelection();
+                    selectedAttacker = circle;
+                    circle.classList.add('selected-attacker');
+                    
+                    targets.forEach(t => {
+                        if (t.getAttribute('data-side') !== selectedAttacker.getAttribute('data-side')) {
+                            t.classList.add('valid-target-hint');
+                        }
+                    });
+                }
+            } else {
+                // Clicked opposite side -> attack if valid target
+                if (circle.classList.contains('line-target')) {
+                    executeAttack(selectedAttacker, circle);
+                    clearSelection();
                 }
             }
-        });
-
-        validTargetCircle = closestTarget;
-        if (validTargetCircle) {
-            validTargetCircle.classList.add('valid-target');
-            // Magnetize line to center of target
-            const targetCoords = getCenterCoords(validTargetCircle);
-            currentX = targetCoords.x;
-            currentY = targetCoords.y;
         }
-    }
-
-    // Handle End Function
-    function handleEnd() {
-        if (!isDrawing) return;
-        isDrawing = false;
-        
-        ctx.clearRect(0, 0, canvas.width, canvas.height); // clear line
-
-        if (validTargetCircle) {
-            validTargetCircle.classList.remove('valid-target');
-            executeAttack(startCircle, validTargetCircle);
-        }
-        
-        startCircle = null;
-        validTargetCircle = null;
-    }
-
-    // Attach Event Listeners to each source (front row)
-    sources.forEach(source => {
-        // Find the overlay specifically to attach events to
-        const overlay = source.querySelector('.node-overlay');
-        
-        ['mousedown', 'touchstart'].forEach(evt => 
-            overlay.addEventListener(evt, (e) => handleStart(e, source), {passive: false})
-        );
     });
 
-    // Global move/end listeners
-    ['mousemove', 'touchmove'].forEach(evt => 
-        window.addEventListener(evt, handleMove, {passive: false})
-    );
-
-    ['mouseup', 'touchend'].forEach(evt => 
-        window.addEventListener(evt, handleEnd)
-    );
-
-
-    // --- Draw Function (AnimationFrame) --- //
-    function drawFrame() {
-        if (!isDrawing) return;
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Draw Line
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
-        ctx.lineTo(currentX, currentY);
-        
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        
-        if (validTargetCircle) {
-            ctx.strokeStyle = '#33ff33'; // Green if locked on
-            ctx.shadowColor = '#33ff33';
-            ctx.lineWidth = 6;
-            ctx.shadowBlur = 15;
-        } else {
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-            ctx.shadowColor = 'transparent';
-            ctx.lineWidth = 4;
-            ctx.shadowBlur = 0;
+    function clearSelection() {
+        if (selectedAttacker) {
+            selectedAttacker.classList.remove('selected-attacker');
         }
-
-        ctx.stroke();
-
-        requestAnimationFrame(drawFrame);
+        selectedAttacker = null;
+        
+        targets.forEach(t => {
+            t.classList.remove('valid-target-hint');
+        });
     }
-
 
     // --- Attack Calculation Logic --- //
     function executeAttack(attackerEl, defenderEl) {
@@ -311,8 +195,9 @@ document.addEventListener('DOMContentLoaded', () => {
             circle.classList.remove('rested');
         });
 
-        document.getElementById('battleTitle').innerHTML = 'เทิร์นใหม่: ลากเส้นเพื่อโจมตี!';
-        document.getElementById('resultsList').innerHTML = '<div class="result-item placeholder">ยังไม่มีการโจมตี</div>';
+        clearSelection();
+        document.getElementById('battleTitle').innerHTML = 'เทิร์นใหม่: คลิกที่ยูนิตเพื่อเริ่มโจมตี!';
+        document.getElementById('resultsList').innerHTML = '<div class="result-item placeholder">ยังไม่มีการโจมตี (สลับโจมตีได้ทั้ง 2 ฝั่ง)</div>';
     }
 
     resetOpponentBtn.addEventListener('click', () => standSide('opponent'));
