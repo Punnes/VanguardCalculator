@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanguard Battlefield Calculator</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        
+        <!-- Header -->
+        <div class="header-badge bounce-in">
+            <h1><i class="fa-solid fa-khanda"></i> Vanguard Battlefield <i class="fa-solid fa-shield-halved"></i></h1>
+        </div>
+
+        <!-- Result Box at the top to be easily readable -->
+        <div class="result-box slide-up" id="resultBox">
+            <h3 id="battleTitle">กดค้างที่ยูนิตแถวหน้าและลากเส้นไปหาเป้าหมายเพื่อโจมตี!</h3>
+            <div id="resultsList" class="results-list">
+                <div class="result-item placeholder">ยังไม่มีการโจมตี (ลากเส้นสลับไปมาได้ทั้ง 2 ฝั่ง)</div>
+            </div>
+            <div class="reset-actions">
+                <button id="resetOpponentBtn" class="btn reset-btn"><i class="fa-solid fa-arrows-rotate"></i> Stand All (Opponent)</button>
+                <button id="resetPlayerBtn" class="btn reset-btn"><i class="fa-solid fa-arrows-rotate"></i> Stand All (Player)</button>
+            </div>
+        </div>
+
+        <!-- The Battlefield -->
+        <div class="battlefield-container slide-up" id="battlefield">
+            
+            <!-- Canvas Overlay for Attack Lines -->
+            <canvas id="attackCanvas"></canvas>
+
+            <!-- OPPONENT SIDE (Top) -->
+            <div class="field-half opponent-half" id="half-opponent">
+                <div class="side-label opponent-label">OPPONENT</div>
+                
+                <!-- Back Row (Boosters) -->
+                <div class="field-row">
+                    <div class="circle-wrapper row-back">
+                        <div class="vg-circle rearguard" id="opp-back-left" data-side="opponent">
+                            <span class="circle-title">R</span>
+                            <input type="number" class="power-input" value="8000" id="opp-back-left-power">
+                            <label class="boost-toggle"><input type="checkbox" id="opp-back-left-boost" checked> Boost</label>
+                        </div>
+                    </div>
+                    <div class="circle-wrapper row-back">
+                        <div class="vg-circle rearguard" id="opp-back-center" data-side="opponent">
+                            <span class="circle-title">R</span>
+                            <input type="number" class="power-input" value="8000" id="opp-back-center-power">
+                            <label class="boost-toggle"><input type="checkbox" id="opp-back-center-boost" checked> Boost</label>
+                        </div>
+                    </div>
+                    <div class="circle-wrapper row-back">
+                        <div class="vg-circle rearguard" id="opp-back-right" data-side="opponent">
+                            <span class="circle-title">R</span>
+                            <input type="number" class="power-input" value="8000" id="opp-back-right-power">
+                            <label class="boost-toggle"><input type="checkbox" id="opp-back-right-boost" checked> Boost</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Front Row (Attackers & Defenders) -->
+                <div class="field-row">
+                    <div class="circle-wrapper row-front">
+                        <div class="vg-circle rearguard line-source line-target" id="opp-front-left" data-side="opponent" data-col="left">
+                            <span class="circle-title">R</span>
+                            <div class="node-overlay"></div>
+                            <input type="number" class="power-input" value="10000" id="opp-front-left-power">
+                        </div>
+                    </div>
+                    <div class="circle-wrapper row-front">
+                        <div class="vg-circle vanguard line-source line-target" id="opp-front-center" data-side="opponent" data-col="center">
+                            <span class="circle-title">V</span>
+                            <div class="node-overlay"></div>
+                            <input type="number" class="power-input" value="13000" id="opp-front-center-power">
+                            <select id="opp-drive-select" class="drive-select">
+                                <option value="1">1 Drive</option>
+                                <option value="2" selected>2 Drive</option>
+                                <option value="3">3 Drive</option>
+                                <option value="4">4 Drive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="circle-wrapper row-front">
+                        <div class="vg-circle rearguard line-source line-target" id="opp-front-right" data-side="opponent" data-col="right">
+                            <span class="circle-title">R</span>
+                            <div class="node-overlay"></div>
+                            <input type="number" class="power-input" value="10000" id="opp-front-right-power">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="battle-divider"></div>
+
+            <!-- PLAYER SIDE (Bottom) -->
+            <div class="field-half player-half" id="half-player">
+                <div class="side-label player-label">PLAYER</div>
+                
+                <!-- Front Row (Attackers & Defenders) -->
+                <div class="field-row">
+                    <div class="circle-wrapper row-front">
+                        <div class="vg-circle rearguard line-source line-target" id="player-front-left" data-side="player" data-col="left">
+                            <span class="circle-title">R</span>
+                            <div class="node-overlay"></div>
+                            <input type="number" class="power-input" value="10000" id="player-front-left-power">
+                        </div>
+                    </div>
+                    <div class="circle-wrapper row-front">
+                        <div class="vg-circle vanguard line-source line-target" id="player-front-center" data-side="player" data-col="center">
+                            <span class="circle-title">V</span>
+                            <div class="node-overlay"></div>
+                            <input type="number" class="power-input" value="13000" id="player-front-center-power">
+                            <select id="player-drive-select" class="drive-select">
+                                <option value="1">1 Drive</option>
+                                <option value="2" selected>2 Drive</option>
+                                <option value="3">3 Drive</option>
+                                <option value="4">4 Drive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="circle-wrapper row-front">
+                        <div class="vg-circle rearguard line-source line-target" id="player-front-right" data-side="player" data-col="right">
+                            <span class="circle-title">R</span>
+                            <div class="node-overlay"></div>
+                            <input type="number" class="power-input" value="10000" id="player-front-right-power">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Back Row (Boosters) -->
+                <div class="field-row">
+                    <div class="circle-wrapper row-back">
+                        <div class="vg-circle rearguard" id="player-back-left" data-side="player">
+                            <span class="circle-title">R</span>
+                            <input type="number" class="power-input" value="8000" id="player-back-left-power">
+                            <label class="boost-toggle"><input type="checkbox" id="player-back-left-boost" checked> Boost</label>
+                        </div>
+                    </div>
+                    <div class="circle-wrapper row-back">
+                        <div class="vg-circle rearguard" id="player-back-center" data-side="player">
+                            <span class="circle-title">R</span>
+                            <input type="number" class="power-input" value="8000" id="player-back-center-power">
+                            <label class="boost-toggle"><input type="checkbox" id="player-back-center-boost" checked> Boost</label>
+                        </div>
+                    </div>
+                    <div class="circle-wrapper row-back">
+                        <div class="vg-circle rearguard" id="player-back-right" data-side="player">
+                            <span class="circle-title">R</span>
+                            <input type="number" class="power-input" value="8000" id="player-back-right-power">
+                            <label class="boost-toggle"><input type="checkbox" id="player-back-right-boost" checked> Boost</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

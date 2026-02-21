@@ -1,0 +1,400 @@
+:root {
+    --primary: #0d6efd;
+    --primary-hover: #0b5ed7;
+    --bg-overlay: rgba(10, 15, 30, 0.85);
+    --border-radius: 8px;
+    --vg-red: #ff3333;
+    --rg-green: #33ff33;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Kanit', sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=2070&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    padding: 20px;
+    color: white;
+}
+
+.app-container {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    margin-top: 10px;
+}
+
+.header-badge {
+    background: rgba(20, 25, 40, 0.85);
+    backdrop-filter: blur(5px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--border-radius);
+    padding: 10px 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.header-badge h1 {
+    color: #fff;
+    font-size: 24px;
+    font-weight: 600;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    margin: 0;
+}
+
+/* Result Box */
+.result-box {
+    background: var(--bg-overlay);
+    padding: 15px 20px;
+    border-radius: 12px;
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    text-align: center;
+}
+
+.result-box h3 {
+    margin-bottom: 10px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 10px;
+}
+
+.result-item {
+    font-size: 15px;
+    margin-bottom: 8px;
+    color: #ddd;
+}
+
+.result-item.placeholder {
+    color: #aaa;
+    font-style: italic;
+}
+
+.result-highlight {
+    background: linear-gradient(135deg, #a0a0a0, #7a7a7a);
+    color: white;
+    padding: 10px 15px;
+    display: inline-block;
+    border-radius: var(--border-radius);
+    font-weight: 700;
+    font-size: 20px;
+    margin-top: 15px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.reset-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.reset-btn {
+    background: rgba(40, 167, 69, 0.8);
+    border: 1px solid #28a745;
+    color: white;
+    border-radius: 20px;
+    padding: 8px 15px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.reset-btn:hover {
+    background: rgba(40, 167, 69, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(40, 167, 69, 0.4);
+}
+
+/* Battlefield & Canvas */
+.battlefield-container {
+    width: 100%;
+    background: rgba(0, 5, 15, 0.8);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.7);
+    overflow: hidden;
+    position: relative;
+    padding-bottom: 20px;
+    /* Important for absolute canvas positioning */
+}
+
+#attackCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Let clicks pass through to underneath elements */
+    z-index: 10; /* Above circles */
+}
+
+.field-half {
+    padding: 20px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+}
+
+.opponent-half {
+    background: linear-gradient(to bottom, rgba(50, 10, 10, 0.3), transparent);
+}
+
+.player-half {
+    background: linear-gradient(to top, rgba(10, 30, 50, 0.3), transparent);
+}
+
+.side-label {
+    text-align: center;
+    font-weight: 700;
+    letter-spacing: 2px;
+    font-size: 14px;
+    opacity: 0.7;
+    margin-bottom: 5px;
+}
+
+.opponent-label { color: #ff6b6b; }
+.player-label { color: #4dabf7; }
+
+.battle-divider {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    width: 100%;
+    margin: 5px 0;
+}
+
+.field-row {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* Circles */
+.circle-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100px;
+    position: relative;
+}
+
+.vg-circle {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.6);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease, opacity 0.3s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none; /* Crucial for touch dragging */
+}
+
+/* Line Source Hover/Active Styles */
+.line-source:not(.rested) {
+    cursor: crosshair;
+}
+
+.line-source:not(.rested):hover {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+}
+
+.vg-circle.valid-target {
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.9), inset 0 0 15px rgba(255, 255, 255, 0.7) !important;
+    transform: scale(1.15);
+}
+
+.vg-circle.invalid-target {
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.9), inset 0 0 15px rgba(255, 0, 0, 0.7) !important;
+}
+
+.vg-circle.rested {
+    transform: rotate(90deg);
+    opacity: 0.45; /* FADED LOOK as requested */
+    box-shadow: 0 0 5px rgba(0,0,0,0.8);
+    cursor: not-allowed;
+}
+
+.vg-circle.rested .power-input,
+.vg-circle.rested .circle-title,
+.vg-circle.rested .drive-select {
+    transform: rotate(-90deg); 
+}
+.vg-circle.rested .drive-select {
+    display: none; 
+}
+.vg-circle.rested .boost-toggle {
+    display: none !important;
+}
+
+/* Transparent overlay to catch pointer events easily covering the whole circle */
+.node-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: 50%;
+    z-index: 5;
+    cursor: crosshair;
+}
+.vg-circle.rested .node-overlay {
+    cursor: not-allowed;
+}
+
+.vg-circle::before {
+    content: '';
+    position: absolute;
+    top: -5px; left: -5px; right: -5px; bottom: -5px;
+    border-radius: 50%;
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    animation: rotate 20s linear infinite;
+    pointer-events: none;
+}
+
+.rearguard {
+    border: 2px solid var(--rg-green);
+    box-shadow: 0 0 15px rgba(51, 255, 51, 0.4), inset 0 0 15px rgba(51, 255, 51, 0.2);
+}
+
+.vanguard {
+    border: 3px solid var(--vg-red);
+    box-shadow: 0 0 20px rgba(255, 51, 51, 0.6), inset 0 0 20px rgba(255, 51, 51, 0.3);
+    width: 100px;
+    height: 100px;
+}
+
+.circle-title {
+    position: absolute;
+    font-size: 40px;
+    font-weight: 800;
+    font-family: serif;
+    opacity: 0.15;
+    z-index: 1;
+    pointer-events: none;
+    transition: transform 0.4s ease;
+}
+
+.rearguard .circle-title { color: var(--rg-green); }
+.vanguard .circle-title { color: var(--vg-red); font-size: 50px; }
+
+/* Inputs and Toggles */
+.power-input {
+    width: 65px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    border-radius: 4px;
+    padding: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 6; /* above overlay so we can type */
+    position: relative;
+    outline: none;
+    transition: all 0.4s ease;
+}
+
+.vanguard .power-input {
+    width: 75px;
+    font-size: 16px;
+}
+
+.power-input:focus {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: #fff;
+    cursor: text;
+}
+
+.boost-toggle {
+    position: absolute;
+    bottom: -22px;
+    font-size: 11px;
+    color: #ccc;
+    background: rgba(0,0,0,0.6);
+    padding: 2px 6px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    z-index: 6;
+}
+.boost-toggle input {
+    cursor: pointer;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.drive-select {
+    margin-top: 5px;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: 1px solid var(--vg-red);
+    border-radius: 3px;
+    font-size: 10px;
+    padding: 2px;
+    z-index: 6;
+    position: relative;
+    cursor: pointer;
+    outline: none;
+}
+
+/* Animations */
+.bounce-in {
+    animation: bounceIn 0.8s cubic-bezier(0.25, 1.5, 0.5, 1);
+}
+
+.slide-up {
+    animation: slideUp 0.6s ease-out backwards;
+    animation-delay: 0.1s;
+}
+
+@keyframes bounceIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slideUp {
+    0% { transform: translateY(30px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@media (min-width: 768px) {
+    .vg-circle { width: 100px; height: 100px; }
+    .vanguard { width: 115px; height: 115px; }
+    .circle-wrapper { width: 120px; }
+    .power-input { width: 75px; font-size: 15px; }
+    .vanguard .power-input { width: 85px; font-size: 18px; }
+}
